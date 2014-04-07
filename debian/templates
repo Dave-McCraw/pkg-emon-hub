@@ -1,0 +1,75 @@
+Template: emoncms-hub/com_port
+Type: string
+Default:/dev/ttyAMA0
+Description: RFM12B serial port:
+ emoncmsHub will communicate with the RFM12B
+ using this port
+
+Template: emoncms-hub/radio_group
+Type: string
+Default:210
+Description: RFM12B radio group:
+ emoncmsHub will configure the RFM12B
+ to use the specified radio group
+
+Template: emoncms-hub/radio_frequency
+Type: select
+Choices: 4, 8, 9
+Default:4
+Description: RFM12B frequency (433/868/915MHz):
+ You must confirm the frequency of your actual RFM12B
+ hardware
+
+Template: emoncms-hub/radio_send_time_interval
+Type: string
+Default:0
+Description: RFM12B time sending interval (sec):
+ emoncmsHub will transmit the time at the selected
+ interval for the benefit of any emonGLCD nodes you
+ have on your network.
+ The default of '0' means time transmissions will never be sent.
+
+Template: emoncms-hub/radio_node_id
+Type: string
+Default:15
+Description: RFM12B node ID:
+ emoncmsHub will configure the RFM12B to use
+ the specified radio node ID
+
+Template: emoncms-hub/dispatcher_name
+Type: string
+Default: emoncms-local
+Description: Name of dispatcher:
+ Enter a label for the dispatcher (this is
+ only used to identify it in logfiles etc).
+
+Template: emoncms-hub/dispatcher_protocol
+Type: string
+Default: http://
+Description: Dispatcher protocol:
+  Enter the protocol for the dispatcher to
+  use to send input to the endpoint.
+
+Template: emoncms-hub/dispatcher_domain
+Type: string
+Default: localhost
+Description: Dispatcher endpoint host:
+  Enter the endpoint host for the dispatcher
+
+Template: emoncms-hub/dispatcher_path
+Type: string
+Default: /emoncms
+Description: Dispatcher endpoint path:
+  Enter the endpoint path for the dispatcher
+
+Template: emoncms-hub/dispatcher_key
+Type: string
+Description: Dispatcher endpoint API write key:
+  Enter the write API key for the endpoint
+
+Template: emoncms-hub/org_dispatcher_key
+Type: string
+Description: API write key for emoncms.org:
+  Optionally, enter an API write key for emoncms.org
+  if you would like to additionally dispatch inputs there.
+  Leave blank to ignore.

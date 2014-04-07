@@ -1,0 +1,13 @@
+Source: emoncms-hub
+Section: non-free/web
+Priority: optional
+Maintainer: Dave McCraw <dave@mccraw.co.uk>
+Build-Depends: debhelper (>= 9), quilt
+Standards-Version: 3.9.2
+
+Package: emoncms-hub
+Architecture: any
+Depends: debconf | debconf-2.0, 
+  python, python-serial, python-configobj, python-mysqldb,
+  ${misc:Depends}
+Description: Software to run on the emonBase (Pi) to marshal and buffer inputs.

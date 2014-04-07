@@ -1,0 +1,6 @@
+emoncms-hub (0.1) unstable; urgency=low
+
+  This version is the first debian-packaged release of emoncms-hub (oem_gateway).
+  It is just a cut from the dev branch.
+ 
+-- Dave McCraw <dave@mccraw.co.uk>  Thu, 20 Mar 2014 18:55:08 +0000

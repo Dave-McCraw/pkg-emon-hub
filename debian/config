@@ -1,0 +1,47 @@
+#!/bin/sh
+
+CONFIGFILE=/etc/emoncms-hub-debconf.conf
+ 
+# Exit on error
+set -e
+ 
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+# Load config if exists 
+if [ -e $CONFIGFILE ]; then
+    . $CONFIGFILE || true
+
+  # Store values from config file into debconf db.
+  db_set emoncms-hub/com_port "$COM_PORT"
+  
+  db_set emoncms-hub/radio_group "$RADIO_GROUP"
+  db_set emoncms-hub/radio_frequency "$RADIO_FREQ"
+  db_set emoncms-hub/radio_send_time_interval "$RADIO_SEND_TIME_INTERVAL"
+  db_set emoncms-hub/radio_node_id "$RADIO_NODE_ID"
+  
+  db_set emoncms-hub/dispatcher_name "$DISPATCHER_NAME"
+  db_set emoncms-hub/dispatcher_protocol "$DISPATCHER_PROTOCOL"
+  db_set emoncms-hub/dispatcher_domain "$DISPATCHER_DOMAIN"
+  db_set emoncms-hub/dispatcher_path "$DISPATCHER_PATH"
+  db_set emoncms-hub/dispatcher_key "$DISPATCHER_KEY"
+  
+  db_set emoncms-hub/org_dispatcher_key "$ORG_DISPATCHER_KEY"
+  
+fi
+
+# Ask questions
+db_input critical emoncms-hub/com_port || true
+db_input critical emoncms-hub/radio_group || true
+db_input critical emoncms-hub/radio_frequency || true
+db_input critical emoncms-hub/radio_node_id || true
+db_input critical emoncms-hub/radio_send_time_interval || true
+db_input critical emoncms-hub/dispatcher_name || true
+db_input critical emoncms-hub/dispatcher_protocol || true
+db_input critical emoncms-hub/dispatcher_domain || true
+db_input critical emoncms-hub/dispatcher_path || true
+db_input critical emoncms-hub/dispatcher_key || true
+db_input critical emoncms-hub/org_dispatcher_key || true
+ 
+# Show interface
+db_go || true

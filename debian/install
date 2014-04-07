@@ -1,0 +1,5 @@
+oemgateway /usr/share/emoncmsHub/
+*.py /usr/share/emoncmsHub/
+*.md /usr/share/emoncmsHub/
+examples /usr/share/emoncmsHub/
+emoncmsHub /etc/init.d/

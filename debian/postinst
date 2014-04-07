@@ -1,0 +1,135 @@
+#!/bin/sh
+
+# File holding DEBIAN INSTALLATION CONFIGURATION SETTINGS
+DEBCONFIGFILE=/etc/emoncms-hub-debconf.conf
+# File holding EMONCMS HUB CONFIGURATION SETTINGS
+CONFIGFILE=/etc/emoncmsHub/emoncmsHub.conf
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+# Fetching configuration from debconf
+db_get emoncms-hub/com_port 
+COM_PORT=$RET
+
+db_get emoncms-hub/radio_group 
+RADIO_GROUP=$RET
+db_get emoncms-hub/radio_frequency 
+RADIO_FREQ=$RET
+db_get emoncms-hub/radio_send_time_interval 
+RADIO_SEND_TIME_INTERVAL=$RET
+db_get emoncms-hub/radio_node_id 
+RADIO_NODE_ID=$RET
+
+db_get emoncms-hub/dispatcher_name 
+DISPATCHER_NAME=$RET
+db_get emoncms-hub/dispatcher_protocol 
+DISPATCHER_PROTOCOL=$RET
+db_get emoncms-hub/dispatcher_domain 
+DISPATCHER_DOMAIN=$RET
+db_get emoncms-hub/dispatcher_path 
+DISPATCHER_PATH=$RET
+db_get emoncms-hub/dispatcher_key 
+DISPATCHER_KEY=$RET
+
+db_get emoncms-hub/org_dispatcher_key 
+ORG_DISPATCHER_KEY=$RET
+  
+# Print some confirmation output to screen
+echo "Replacing existing emoncmsHub config as follows:"
+echo " - Serial port   : $COM_PORT"
+echo " - RFM12B config : node $RADIO_NODE_ID on group $RADIO_GROUP at $RADIO_FREQ MHz"
+echo " - Transmit time interval : $RADIO_SEND_TIME_INTERVAL"
+echo " - Dispatcher : $DISPATCHER_NAME: $DISPATCHER_PROTOCOL$DISPATCHER_DOMAIN$DISPATCHER_PATH using API key $DISPATCHER_KEY"
+if [ -n "$ORG_DISPATCHER_KEY" ]; then
+  echo " - Dispatcher : emoncms.org using API key $ORG_DISPATCHER_KEY"
+else
+  echo " - Dispatcher : no emoncms.org API key provided (will not be configured)"
+fi
+
+# Write out debian config file.
+echo "# Config file for emoncmsHub" > $DEBCONFIGFILE
+echo "COM_PORT=\"$COM_PORT\"" >> $DEBCONFIGFILE
+
+echo "RADIO_GROUP=\"$RADIO_GROUP\"" >> $DEBCONFIGFILE
+echo "RADIO_FREQ=\"$RADIO_FREQ\"" >> $DEBCONFIGFILE
+echo "RADIO_SEND_TIME_INTERVAL=\"$RADIO_SEND_TIME_INTERVAL\"" >> $DEBCONFIGFILE
+echo "RADIO_NODE_ID=\"$RADIO_NODE_ID\"" >> $DEBCONFIGFILE
+
+echo "DISPATCHER_NAME=\"$DISPATCHER_NAME\"" >> $DEBCONFIGFILE
+echo "DISPATCHER_PROTOCOL=\"$DISPATCHER_PROTOCOL\"" >> $DEBCONFIGFILE
+echo "DISPATCHER_DOMAIN=\"$DISPATCHER_DOMAIN\"" >> $DEBCONFIGFILE
+echo "DISPATCHER_PATH=\"$DISPATCHER_PATH\"" >> $DEBCONFIGFILE
+echo "DISPATCHER_KEY=\"$DISPATCHER_KEY\"" >> $DEBCONFIGFILE
+
+echo "ORG_DISPATCHER_KEY=\"$ORG_DISPATCHER_KEY\"" >> $DEBCONFIGFILE
+
+# We're just going to make a new config file from scratch.
+# This probably isn't going to be pretty, but it avoids any risk 
+# of disturbing conventional users...
+
+mkdir -p "$(dirname "$CONFIGFILE")" && touch "$CONFIGFILE"
+
+echo "### This file auto-generated as part of package installation / reconfigurating using APT" > $CONFIGFILE
+echo "### (a backup of your old config was saved as $CONFIGFILE_timestamp_" >> $CONFIGFILE
+echo "[gateway]" >> $CONFIGFILE
+echo "loglevel = DEBUG" >> $CONFIGFILE
+echo "" >> $CONFIGFILE
+echo "[listeners]" >> $CONFIGFILE
+echo "[[RFM2Pi]]" >> $CONFIGFILE
+echo "    type = OemGatewayRFM2PiListener" >> $CONFIGFILE
+echo "    [[[init_settings]]]" >> $CONFIGFILE
+echo "        com_port = $COM_PORT" >> $CONFIGFILE
+echo "    [[[runtime_settings]]]" >> $CONFIGFILE
+echo "        sgroup = $RADIO_GROUP" >> $CONFIGFILE
+echo "        frequency = $RADIO_FREQ" >> $CONFIGFILE
+echo "        baseid = $RADIO_NODE_ID" >> $CONFIGFILE
+echo "        sendtimeinterval = $RADIO_SEND_TIME_INTERVAL" >> $CONFIGFILE
+echo "" >> $CONFIGFILE
+echo "[buffers]" >> $CONFIGFILE
+echo "[[$DISPATCHER_NAME]]" >> $CONFIGFILE
+echo "    type = OemGatewayEmoncmsBuffer" >> $CONFIGFILE
+echo "    [[[init_settings]]]" >> $CONFIGFILE
+echo "    [[[runtime_settings]]]" >> $CONFIGFILE
+echo "        domain = $DISPATCHER_DOMAIN" >> $CONFIGFILE
+echo "        apikey = $DISPATCHER_KEY" >> $CONFIGFILE
+echo "        protocol = $DISPATCHER_PROTOCOL" >> $CONFIGFILE
+echo "        active = True" >> $CONFIGFILE
+echo "        path = $DISPATCHER_PATH" >> $CONFIGFILE
+
+if [ -n "$ORG_DISPATCHER_KEY" ]; then
+  echo "" >> $CONFIGFILE
+  echo "[[emoncms-org]]" >> $CONFIGFILE
+  echo "    type = OemGatewayEmoncmsBuffer" >> $CONFIGFILE
+  echo "    [[[init_settings]]]" >> $CONFIGFILE
+  echo "    [[[runtime_settings]]]" >> $CONFIGFILE
+  echo "        domain = emoncms.org" >> $CONFIGFILE
+  echo "        apikey = $ORG_DISPATCHER_KEY" >> $CONFIGFILE
+  echo "        protocol = http://" >> $CONFIGFILE
+  echo "        active = True" >> $CONFIGFILE
+  echo "        path = " >> $CONFIGFILE
+fi
+
+#Sort out logging permissions etc.
+mkdir -p /var/log/emoncmsHub/
+chown pi:pi /var/log/emoncmsHub/
+chmod 750 /var/log/emoncmsHub/
+
+if [ -f /etc/init.d/oemgateway.init.dist ]; then
+  echo "Renaming oemgateway.init.dist"
+  #Rename the init.dist file to init (it was already patched using quilt)
+  mv /etc/init.d/oemgateway.init.dist /etc/init.d/oemgateway999
+  chmod 755 /etc/init.d/oemgateway999
+else
+  echo "No need to rename oemgateway.init.dist (are we reconfiguring?)"
+fi
+
+echo "Start automatically on boot..."
+sudo update-rc.d oemgateway defaults 99
+
+## All done!
+echo "To update emoncmsHub configuration, run 'dpkg-reconfigure emoncms-hub'"
+echo "To start now, run 'sudo service oemgateway start [log]'"
+echo "Remember that you can't run emoncmsHub and the emoncms 'raspberrypi' module at the same time!"
+
+exit 0

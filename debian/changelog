@@ -1,0 +1,5 @@
+emoncms-hub (0.1) unstable; urgency=low
+
+  * Initial packaging attempt - bundles the dev branch of the oem-gateway repo.
+
+ -- Dave McCraw <dave@mccraw.co.uk>  Thu, 20 Mar 2014 18:52:54 +0000
